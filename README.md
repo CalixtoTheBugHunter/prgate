@@ -184,7 +184,7 @@ permissions:
 pnpm install
 pnpm run typecheck   # tsc --noEmit
 pnpm run test        # vitest
-pnpm run build       # bundle src/ → dist/index.js via @vercel/ncc
+pnpm run build       # bundle src/ → dist/index.js via esbuild
 pnpm run all         # all of the above
 ```
 

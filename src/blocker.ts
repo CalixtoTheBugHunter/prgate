@@ -42,7 +42,7 @@ export async function evaluateBlocker(
       issue_number: prNumber,
       per_page: 100,
     });
-    labelPresent = labels.some((l) => l.name === approvalLabel);
+    labelPresent = labels.some((l: { name: string }) => l.name === approvalLabel);
   } catch (err) {
     return {
       passed: false,
