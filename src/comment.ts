@@ -107,7 +107,9 @@ async function findExistingComment(
     issue_number: target.prNumber,
     per_page: 100,
   });
-  const existing = comments.find((c) => (c.body ?? '').includes(COMMENT_MARKER));
+  const existing = comments.find((c: { id: number; body?: string | null }) =>
+    (c.body ?? '').includes(COMMENT_MARKER),
+  );
   return existing?.id;
 }
 

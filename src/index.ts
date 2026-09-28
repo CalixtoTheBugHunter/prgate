@@ -137,11 +137,13 @@ async function listChangedFiles(
     pull_number: target.prNumber,
     per_page: 100,
   });
-  return files.map((f) => ({
-    path: f.filename,
-    status: normalizeStatus(f.status),
-    previousPath: f.previous_filename,
-  }));
+  return files.map(
+    (f: { filename: string; status: string; previous_filename?: string | null }) => ({
+      path: f.filename,
+      status: normalizeStatus(f.status),
+      previousPath: f.previous_filename ?? undefined,
+    }),
+  );
 }
 
 /** Delete a stale comment, tolerating permission errors (fork PRs). */

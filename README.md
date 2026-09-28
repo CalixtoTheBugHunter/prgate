@@ -1,6 +1,6 @@
 # PR Gate
 
-> ⚠️ **Experimental MVP (v0.0.1).** Ship-fast, minimal scope. See [Roadmap](#roadmap).
+> **v1.0.0 — MVP.** Minimal, deterministic scope. See [Roadmap](#roadmap).
 
 A **language-agnostic** GitHub Action that detects when a pull request touches files a
 project has declared **"protected"** (tests, lint config, CI workflows, project config,
@@ -184,7 +184,7 @@ permissions:
 pnpm install
 pnpm run typecheck   # tsc --noEmit
 pnpm run test        # vitest
-pnpm run build       # bundle src/ → dist/index.js via @vercel/ncc
+pnpm run build       # bundle src/ → dist/index.js via esbuild
 pnpm run all         # all of the above
 ```
 
