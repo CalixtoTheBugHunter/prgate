@@ -77,6 +77,7 @@ checked**:
 
 ```jsonc
 {
+  "$schema": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1/schema/guardrails.schema.json",
   "guardrails": {
     "protected": [
       // exactly the globs/paths the human selected

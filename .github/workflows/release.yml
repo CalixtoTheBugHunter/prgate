@@ -34,7 +34,6 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-          registry-url: 'https://registry.npmjs.org' # writes .npmrc using NODE_AUTH_TOKEN
 
       - run: pnpm install --frozen-lockfile
 
@@ -73,8 +72,3 @@ jobs:
           git push origin -f "refs/tags/${MAJOR}"
 
           echo "Released ${TAG} and re-pointed ${MAJOR} at a commit including dist/."
-
-      - name: Publish to npm
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
