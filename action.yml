@@ -1,7 +1,6 @@
 name: 'PR Gate'
 description: >-
-  Deterministically flag pull requests that touch project-declared "protected" files
-  (tests, lint config, CI) for mandatory human review. Language-agnostic, no AI.
+  Deterministically flag pull requests that touch project-declared "protected" files for mandatory human review.
 author: ''
 branding:
   icon: 'shield'
