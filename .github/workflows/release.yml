@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: write # push tags
+  id-token: write # OIDC token for npm Trusted Publishing (tokenless publish + provenance)
 
 jobs:
   build-and-tag:
@@ -34,7 +35,11 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-          registry-url: 'https://registry.npmjs.org' # writes .npmrc using NODE_AUTH_TOKEN
+          registry-url: 'https://registry.npmjs.org' # sets the publish registry in .npmrc
+
+      # Trusted Publishing (OIDC) needs npm >= 11.5.1; Node 20 ships an older npm.
+      - name: Upgrade npm for Trusted Publishing
+        run: npm install -g npm@latest
 
       - run: pnpm install --frozen-lockfile
 
@@ -74,7 +79,9 @@ jobs:
 
           echo "Released ${TAG} and re-pointed ${MAJOR} at a commit including dist/."
 
-      - name: Publish to npm
+      # Tokenless publish via OIDC Trusted Publishing. Requires a Trusted Publisher to be
+      # configured on npmjs.com for this package -> repo (CalixtoTheBugHunter/prgate) +
+      # workflow (release.yml). npm auto-detects the OIDC token; no NPM_TOKEN needed, and
+      # provenance attestation is generated automatically.
+      - name: Publish to npm (Trusted Publishing)
         run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
