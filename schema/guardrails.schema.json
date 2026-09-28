@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1/schema/guardrails.schema.json",
+  "$id": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1.0.0-alpha/schema/guardrails.schema.json",
   "title": "PR Gate guardrails config",
   "description": "Configuration for the PR Gate GitHub Action (guardrails.prgate.json). All project-specific behavior comes from this single file; the check is deterministic and path-based only.",
   "type": "object",
