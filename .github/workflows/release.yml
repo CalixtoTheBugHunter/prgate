@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: write # push tags
+  id-token: write # OIDC token for npm Trusted Publishing (tokenless publish + provenance)
 
 jobs:
   build-and-tag:
