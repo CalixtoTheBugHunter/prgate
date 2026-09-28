@@ -11,7 +11,18 @@
     "protected-files"
   ],
   "license": "GPL-3.0-only",
-  "author": "",
+  "author": "CalixtoTheBugHunter",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CalixtoTheBugHunter/prgate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CalixtoTheBugHunter/prgate/issues"
+  },
+  "homepage": "https://github.com/CalixtoTheBugHunter/prgate#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "commonjs",
   "main": "dist/index.js",
   "files": [
@@ -27,6 +38,7 @@
   "scripts": {
     "build": "ncc build src/index.ts -o dist --source-map --license LICENSES.txt",
     "package": "pnpm run build",
+    "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
