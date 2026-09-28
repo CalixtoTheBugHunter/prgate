@@ -1,6 +1,6 @@
 # PR Gate
 
-> ⚠️ **Experimental MVP (v0.0.1).** Ship-fast, minimal scope. See [Roadmap](#roadmap).
+> **v1.0.0 — MVP.** Minimal, deterministic scope. See [Roadmap](#roadmap).
 
 A **language-agnostic** GitHub Action that detects when a pull request touches files a
 project has declared **"protected"** (tests, lint config, CI workflows, project config,
