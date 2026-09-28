@@ -48,8 +48,7 @@ On each pull request, PR Gate:
 ### 1. Add the workflow
 
 Copy [`docs/templates/pr-gate.yml`](docs/templates/pr-gate.yml) to
-`.github/workflows/pr-gate.yml` and replace `OWNER/pr-gate@v1` with the published action
-reference:
+`.github/workflows/pr-gate.yml`:
 
 ```yaml
 name: PR Gate
@@ -66,8 +65,11 @@ jobs:
   pr-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: OWNER/pr-gate@v1
+      - uses: CalixtoTheBugHunter/prgate@v1
 ```
+
+> Pin to a full commit SHA (`CalixtoTheBugHunter/prgate@<sha>`) for stronger
+> supply-chain safety.
 
 ### 2. Create `guardrails.prgate.json`
 

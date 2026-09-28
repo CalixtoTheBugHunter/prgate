@@ -65,8 +65,9 @@ be blocking. **If they check nothing, do not invent protections — ask again or
 If `.github/workflows/pr-gate.yml` does **not** exist, **copy** the template from
 [`docs/templates/pr-gate.yml`](templates/pr-gate.yml) into `.github/workflows/pr-gate.yml`.
 
-- **Copy only. Write no new workflow logic.** The only edit permitted is replacing
-  `OWNER/pr-gate@v1` with the correct published action reference for this org.
+- **Copy only. Write no new workflow logic.** The template already references
+  `CalixtoTheBugHunter/prgate@v1`; the only edit permitted is pinning it to a specific
+  tag or commit SHA if the human asks.
 - If the file already exists, leave it as-is.
 
 ## Step 4 — Write the approved selections into `guardrails.prgate.json`

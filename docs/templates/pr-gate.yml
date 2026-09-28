@@ -1,7 +1,7 @@
 # PR Gate workflow template — copy this file to .github/workflows/pr-gate.yml in your repo.
 #
-# Before use: replace OWNER/pr-gate@v1 with the published action reference
-# (e.g. your-org/pr-gate@v1, or pin a full commit SHA for stronger supply-chain safety).
+# Tip: pin to a full commit SHA (CalixtoTheBugHunter/prgate@<sha>) for stronger
+# supply-chain safety instead of the floating @v1 tag.
 name: PR Gate
 
 on:
@@ -16,7 +16,7 @@ jobs:
   pr-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: OWNER/pr-gate@v1
+      - uses: CalixtoTheBugHunter/prgate@v1
         # Optional inputs (defaults shown):
         # with:
         #   config-path: guardrails.prgate.json
