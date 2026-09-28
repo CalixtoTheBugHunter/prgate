@@ -1,0 +1,30 @@
+name: 'PR Gate'
+description: >-
+  Deterministically flag pull requests that touch project-declared "protected" files
+  (tests, lint config, CI) for mandatory human review. Language-agnostic, no AI.
+author: ''
+branding:
+  icon: 'shield'
+  color: 'yellow'
+
+inputs:
+  github-token:
+    description: 'Token used to read the PR, post the comment, and verify labeler permissions.'
+    required: false
+    default: ${{ github.token }}
+  config-path:
+    description: 'Path to the guardrails config, relative to the repo root.'
+    required: false
+    default: 'guardrails.prgate.json'
+  approval-label:
+    description: 'Label that a write-access user applies to unblock a hard-blocked PR.'
+    required: false
+    default: 'prgate-approved'
+
+outputs:
+  blocked:
+    description: '"true" when the PR is currently blocked, "false" otherwise.'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
