@@ -26,12 +26,5 @@ jobs:
 
       - run: pnpm run test
 
-      # Ensure the committed dist/ bundle is up to date with src/.
+      # Ensure the bundle still builds cleanly (dist/ is produced on release, not committed).
       - run: pnpm run build
-      - name: Verify dist/ is committed and current
-        run: |
-          if [ -n "$(git status --porcelain dist)" ]; then
-            echo "::error::dist/ is out of date. Run 'pnpm run build' and commit the result."
-            git --no-pager diff -- dist
-            exit 1
-          fi

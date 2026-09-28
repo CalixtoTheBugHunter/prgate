@@ -188,8 +188,19 @@ pnpm run build       # bundle src/ → dist/index.js via @vercel/ncc
 pnpm run all         # all of the above
 ```
 
-`dist/` is a committed build artifact — GitHub runs `dist/index.js` directly. **Rebuild
-and commit it whenever you change `src/`** (CI enforces this).
+### Releasing
+
+`dist/index.js` (the bundle GitHub runs) is **not** committed on `main` — it's gitignored
+to keep PR diffs reviewable. Instead, [`.github/workflows/release.yml`](.github/workflows/release.yml)
+builds it on release and points the tags at a commit that includes it:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0   # release workflow builds dist/ and (re)points v1.0.0 and v1
+```
+
+Consumers then reference `uses: CalixtoTheBugHunter/prgate@v1`. The floating major tag
+(`v1`) always points at the latest matching release build.
 
 ## Roadmap (POST-MVP, not built)
 

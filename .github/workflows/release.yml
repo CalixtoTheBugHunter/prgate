@@ -1,0 +1,62 @@
+# Release: build the dist/ bundle and attach it to the release tags.
+#
+# dist/ is NOT committed on main (it is gitignored) to keep PR diffs reviewable.
+# GitHub runs an action's `dist/index.js` directly, so it must exist on the ref a
+# consumer references. This workflow builds it and force-points both the exact tag
+# (e.g. v1.2.3) and the floating major tag (e.g. v1) at a commit that includes dist/.
+#
+# To release:  git tag v1.0.0 && git push origin v1.0.0
+# Consumers then use:  uses: CalixtoTheBugHunter/prgate@v1
+#
+# Note: pushes made with the built-in GITHUB_TOKEN do not trigger further workflow
+# runs, so re-pointing the triggering tag here does not cause an infinite loop.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write # push tags
+
+jobs:
+  build-and-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+      - run: pnpm run test
+      - run: pnpm run build
+
+      - name: Commit dist/ and (re)point the release + major tags
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          VER="${TAG#v}"          # 1.2.3
+          MAJOR="v${VER%%.*}"     # v1
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -f dist                      # dist/ is gitignored, force-add it
+          git commit -m "build: bundle dist/ for ${TAG}"
+
+          git tag -f "${TAG}"
+          git tag -f "${MAJOR}"
+          git push origin -f "refs/tags/${TAG}"
+          git push origin -f "refs/tags/${MAJOR}"
+
+          echo "Released ${TAG} and re-pointed ${MAJOR} at a commit including dist/."
