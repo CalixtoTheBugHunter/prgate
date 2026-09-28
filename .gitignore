@@ -1,0 +1,7 @@
+node_modules/
+lib/
+coverage/
+*.log
+.DS_Store
+
+# dist/ is intentionally committed — it is the bundled JavaScript action GitHub runs.

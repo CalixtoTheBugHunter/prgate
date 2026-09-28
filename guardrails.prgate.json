@@ -1,0 +1,15 @@
+{
+  "guardrails": {
+    "protected": [
+      "test/**",
+      "src/config.ts",
+      "src/match.ts",
+      "src/blocker.ts",
+      ".github/workflows/**",
+      "action.yml",
+      "tsconfig.json"
+    ],
+    "source_of_truth": [],
+    "is_hard_blocker": false
+  }
+}

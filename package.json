@@ -1,0 +1,49 @@
+{
+  "name": "pr-gate",
+  "version": "0.0.1",
+  "description": "A deterministic, language-agnostic GitHub Action that flags pull requests touching project-declared \"protected\" files (tests, lint config, CI) for mandatory human review.",
+  "keywords": [
+    "github-action",
+    "pull-request",
+    "guardrails",
+    "code-review",
+    "ci",
+    "protected-files"
+  ],
+  "license": "GPL-3.0-only",
+  "author": "",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "files": [
+    "action.yml",
+    "dist/",
+    "docs/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "ncc build src/index.ts -o dist --source-map --license LICENSES.txt",
+    "package": "pnpm run build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "all": "pnpm run typecheck && pnpm run test && pnpm run build"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.0",
+    "minimatch": "^10.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@vercel/ncc": "^0.38.3",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}

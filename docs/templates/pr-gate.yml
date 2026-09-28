@@ -1,0 +1,24 @@
+# PR Gate workflow template — copy this file to .github/workflows/pr-gate.yml in your repo.
+#
+# Before use: replace OWNER/pr-gate@v1 with the published action reference
+# (e.g. your-org/pr-gate@v1, or pin a full commit SHA for stronger supply-chain safety).
+name: PR Gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write # post/update the PR Gate comment
+
+jobs:
+  pr-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: OWNER/pr-gate@v1
+        # Optional inputs (defaults shown):
+        # with:
+        #   config-path: guardrails.prgate.json
+        #   approval-label: prgate-approved
+        #   github-token: ${{ github.token }}
