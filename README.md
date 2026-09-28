@@ -1,6 +1,8 @@
 # PR Gate
 
-> **v1.0.0 — MVP.** Minimal, deterministic scope. See [Roadmap](#roadmap).
+> **v1.0.0-alpha — pre-release MVP.** Minimal, deterministic scope, still stabilizing.
+> Pin the exact pre-release tag (`@v1.0.0-alpha`); the floating `v1` tag is reserved for
+> the first stable release. See [Roadmap](#roadmap).
 
 A **language-agnostic** GitHub Action that detects when a pull request touches files a
 project has declared **"protected"** (tests, lint config, CI workflows, project config,
@@ -65,7 +67,7 @@ jobs:
   pr-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: CalixtoTheBugHunter/prgate@v1
+      - uses: CalixtoTheBugHunter/prgate@v1.0.0-alpha
 ```
 
 > Pin to a full commit SHA (`CalixtoTheBugHunter/prgate@<sha>`) for stronger
@@ -78,7 +80,7 @@ and edit the `protected` globs, or start from:
 
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1/schema/guardrails.schema.json",
+  "$schema": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1.0.0-alpha/schema/guardrails.schema.json",
   "guardrails": {
     "protected": ["tests/**", "**/*.spec.ts", ".github/workflows/**", ".eslintrc*"],
     "source_of_truth": [],
@@ -207,7 +209,13 @@ git push origin v1.0.0   # release workflow builds dist/ and (re)points v1.0.0 a
 ```
 
 Consumers then reference `uses: CalixtoTheBugHunter/prgate@v1`. The floating major tag
-(`v1`) always points at the latest matching release build.
+(`v1`) always points at the latest matching **stable** release build.
+
+**Pre-releases** work the same way but use a SemVer pre-release tag (e.g.
+`git tag v1.0.0-alpha && git push origin v1.0.0-alpha`). The workflow builds `dist/` and
+points the exact tag at it, but **does not** move the floating `v1` tag — consumers opt
+into a pre-release by pinning the exact tag (`@v1.0.0-alpha`). Keep `package.json`'s
+`version` in sync with the tag (the release workflow enforces this).
 
 ## Roadmap (POST-MVP, not built)
 

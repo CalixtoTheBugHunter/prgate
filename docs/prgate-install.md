@@ -66,7 +66,7 @@ If `.github/workflows/pr-gate.yml` does **not** exist, **copy** the template fro
 [`docs/templates/pr-gate.yml`](templates/pr-gate.yml) into `.github/workflows/pr-gate.yml`.
 
 - **Copy only. Write no new workflow logic.** The template already references
-  `CalixtoTheBugHunter/prgate@v1`; the only edit permitted is pinning it to a specific
+  `CalixtoTheBugHunter/prgate@v1.0.0-alpha`; the only edit permitted is pinning it to a specific
   tag or commit SHA if the human asks.
 - If the file already exists, leave it as-is.
 
@@ -77,7 +77,7 @@ checked**:
 
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1/schema/guardrails.schema.json",
+  "$schema": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1.0.0-alpha/schema/guardrails.schema.json",
   "guardrails": {
     "protected": [
       // exactly the globs/paths the human selected

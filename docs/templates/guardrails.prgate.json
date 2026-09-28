@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1/schema/guardrails.schema.json",
+  "$schema": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1.0.0-alpha/schema/guardrails.schema.json",
   "guardrails": {
     "protected": [
       "tests/**",
