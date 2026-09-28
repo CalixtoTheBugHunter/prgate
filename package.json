@@ -20,25 +20,15 @@
     "url": "https://github.com/CalixtoTheBugHunter/prgate/issues"
   },
   "homepage": "https://github.com/CalixtoTheBugHunter/prgate#readme",
-  "publishConfig": {
-    "access": "public"
-  },
+  "private": true,
   "type": "commonjs",
   "main": "dist/index.js",
-  "files": [
-    "action.yml",
-    "dist/",
-    "docs/",
-    "README.md",
-    "LICENSE"
-  ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --sourcemap --outfile=dist/index.js",
     "package": "pnpm run build",
-    "prepublishOnly": "pnpm run build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1/schema/guardrails.schema.json",
+  "title": "PR Gate guardrails config",
+  "description": "Configuration for the PR Gate GitHub Action (guardrails.prgate.json). All project-specific behavior comes from this single file; the check is deterministic and path-based only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["guardrails"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional pointer to this JSON Schema, for editor validation/autocomplete."
+    },
+    "guardrails": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The single top-level object holding all PR Gate settings.",
+      "properties": {
+        "protected": {
+          "type": "array",
+          "description": "Glob patterns (minimatch syntax) matched against the PR's changed file paths. Empty or omitted => nothing is guarded (PR Gate passes silently).",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "source_of_truth": {
+          "type": "array",
+          "description": "POST-MVP. Parsed and shape-validated, but NOT enforced in this version.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "is_hard_blocker": {
+          "type": "boolean",
+          "description": "false (default) = advisory comment only. true = the check fails until a write-access user applies the approval label.",
+          "default": false
+        }
+      }
+    }
+  }
+}

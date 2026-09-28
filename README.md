@@ -73,10 +73,12 @@ jobs:
 
 ### 2. Create `guardrails.prgate.json`
 
-At your repo root:
+At your repo root. Copy [`docs/templates/guardrails.prgate.json`](docs/templates/guardrails.prgate.json)
+and edit the `protected` globs, or start from:
 
 ```jsonc
 {
+  "$schema": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1/schema/guardrails.schema.json",
   "guardrails": {
     "protected": ["tests/**", "**/*.spec.ts", ".github/workflows/**", ".eslintrc*"],
     "source_of_truth": [],
@@ -84,6 +86,9 @@ At your repo root:
   }
 }
 ```
+
+The optional `$schema` line gives you **validation and autocomplete** in editors like
+VS Code (see [`schema/guardrails.schema.json`](schema/guardrails.schema.json)).
 
 That's it. Open a PR that touches one of those paths and PR Gate will comment.
 
@@ -103,7 +108,9 @@ and opening a PR for your approval.
 ## Configuration reference
 
 `guardrails.prgate.json` at the repo root. The whole config lives under a single
-top-level `guardrails` key. Unknown keys are ignored with a warning.
+top-level `guardrails` key. Unknown keys are ignored with a warning. A
+[JSON Schema](schema/guardrails.schema.json) is published for editor validation — add a
+`$schema` key pointing at it (see the [quick start](#quick-start) example).
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
