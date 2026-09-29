@@ -20,6 +20,7 @@ export interface RenderOptions {
   repo: string;
   prNumber: number;
   serverUrl: string;
+  updateNotice?: string | null;
 }
 
 /**
@@ -48,7 +49,8 @@ export function diffUrl(opts: {
  * Always leads with the hidden marker so the comment can be found and updated in place.
  */
 export function renderComment(opts: RenderOptions): string {
-  const { matched, isHardBlocker, approvalLabel, owner, repo, prNumber, serverUrl } = opts;
+  const { matched, isHardBlocker, approvalLabel, owner, repo, prNumber, serverUrl, updateNotice } =
+    opts;
 
   const rows = matched
     .map((file) => {
@@ -78,6 +80,10 @@ export function renderComment(opts: RenderOptions): string {
       `**This PR is blocked.** A maintainer with write access must review the changes above ` +
         `and apply the \`${approvalLabel}\` label to unblock.`,
     );
+  }
+
+  if (updateNotice) {
+    lines.push('', `> ℹ️ ${updateNotice}`);
   }
 
   return lines.join('\n');

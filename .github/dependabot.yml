@@ -1,0 +1,13 @@
+# Keep PR Gate's own dependencies current: the actions referenced by its workflows
+# (actions/checkout, setup-node, pnpm/action-setup) and its npm packages.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"

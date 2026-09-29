@@ -19,6 +19,13 @@ inputs:
     description: 'Label that a write-access user applies to unblock a hard-blocked PR.'
     required: false
     default: 'prgate-approved'
+  version-check:
+    description: >-
+      When "true" (default), emit a non-blocking warning if a newer PR Gate release is available.
+      Never fails the run. Set "false" to disable. Consumers pinned to a floating tag (e.g. v1) are
+      never nudged, since they already auto-update.
+    required: false
+    default: 'true'
 
 outputs:
   blocked:

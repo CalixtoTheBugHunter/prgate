@@ -1,0 +1,10 @@
+# Dependabot template — copy this file to .github/dependabot.yml in your repo to get an
+# automatic upgrade PR whenever PR Gate (or any other action you use) publishes a new
+# release. This only matters if you pin an exact tag or SHA; consumers on the floating
+# `@v1` tag already auto-update. See https://docs.github.com/code-security/dependabot
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/" # scans .github/workflows for `uses:` action references
+    schedule:
+      interval: "weekly"

@@ -22,3 +22,4 @@ jobs:
         #   config-path: guardrails.prgate.json
         #   approval-label: prgate-approved
         #   github-token: ${{ github.token }}
+        #   version-check: 'true'   # warn (never fail) when a newer PR Gate release exists

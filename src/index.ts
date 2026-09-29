@@ -5,11 +5,13 @@ import { evaluateBlocker } from './blocker';
 import { type CommentTarget, deleteStaleComment, renderComment, upsertComment } from './comment';
 import { ConfigError, type LoadResult, loadConfig } from './config';
 import { type ChangedFile, matchProtected, normalizeStatus } from './match';
+import { checkForUpdate } from './version-check';
 
 async function run(): Promise<void> {
   const token = core.getInput('github-token', { required: true });
   const configPath = core.getInput('config-path') || 'guardrails.prgate.json';
   const approvalLabel = core.getInput('approval-label') || 'prgate-approved';
+  const versionCheckEnabled = (core.getInput('version-check') || 'true').toLowerCase() !== 'false';
 
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
   const absoluteConfigPath = path.isAbsolute(configPath)
@@ -48,6 +50,11 @@ async function run(): Promise<void> {
   const prNumber = pr.number;
   const target: CommentTarget = { owner, repo, prNumber };
 
+  const updateNotice = await checkForUpdate(octokit, {
+    enabled: versionCheckEnabled,
+    actionRef: process.env.GITHUB_ACTION_REF,
+  });
+
   if (config.protected.length === 0) {
     core.notice('`protected` is empty — nothing is guarded. Passing.');
     await safeDeleteStaleComment(octokit, target);
@@ -84,6 +91,7 @@ async function run(): Promise<void> {
     repo,
     prNumber,
     serverUrl: github.context.serverUrl,
+    updateNotice,
   });
   try {
     await upsertComment(octokit, target, body);
