@@ -1,6 +1,6 @@
 # PR Gate workflow template — copy this file to .github/workflows/pr-gate.yml in your repo.
 #
-# Tip: pin to a full commit SHA (CalixtoTheBugHunter/prgate@<sha>) for stronger
+# Tip: pin to a full commit SHA (Fuzzy-Unlogic/prgate@<sha>) for stronger
 # supply-chain safety instead of the pre-release @v1.0.0-alpha tag.
 name: PR Gate
 
@@ -16,7 +16,7 @@ jobs:
   pr-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: CalixtoTheBugHunter/prgate@v1.0.0-alpha
+      - uses: Fuzzy-Unlogic/prgate@v1.0.0-alpha
         # Optional inputs (defaults shown):
         # with:
         #   config-path: guardrails.prgate.json

@@ -67,10 +67,10 @@ jobs:
   pr-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: CalixtoTheBugHunter/prgate@v1.0.0-alpha
+      - uses: Fuzzy-Unlogic/prgate@v1.0.0-alpha
 ```
 
-> Pin to a full commit SHA (`CalixtoTheBugHunter/prgate@<sha>`) for stronger
+> Pin to a full commit SHA (`Fuzzy-Unlogic/prgate@<sha>`) for stronger
 > supply-chain safety.
 
 ### 2. Create `guardrails.prgate.json`
@@ -80,7 +80,7 @@ and edit the `protected` globs, or start from:
 
 ```jsonc
 {
-  "$schema": "https://raw.githubusercontent.com/CalixtoTheBugHunter/prgate/v1.0.0-alpha/schema/guardrails.schema.json",
+  "$schema": "https://raw.githubusercontent.com/Fuzzy-Unlogic/prgate/v1.0.0-alpha/schema/guardrails.schema.json",
   "guardrails": {
     "protected": ["tests/**", "**/*.spec.ts", ".github/workflows/**", ".eslintrc*"],
     "source_of_truth": [],
@@ -208,7 +208,7 @@ git tag v1.0.0
 git push origin v1.0.0   # release workflow builds dist/ and (re)points v1.0.0 and v1
 ```
 
-Consumers then reference `uses: CalixtoTheBugHunter/prgate@v1`. The floating major tag
+Consumers then reference `uses: Fuzzy-Unlogic/prgate@v1`. The floating major tag
 (`v1`) always points at the latest matching **stable** release build.
 
 **Pre-releases** work the same way but use a SemVer pre-release tag (e.g.
