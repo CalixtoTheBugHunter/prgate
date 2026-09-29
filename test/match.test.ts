@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  isProtected,
-  matchProtected,
-  normalizeStatus,
-  type ChangedFile,
-} from '../src/match';
+import { type ChangedFile, isProtected, matchProtected, normalizeStatus } from '../src/match';
 
 describe('normalizeStatus', () => {
   it('maps added → CREATED', () => {
@@ -56,7 +51,6 @@ describe('isProtected', () => {
   });
 
   it('also matches when a renamed file MOVED OUT of a protected path', () => {
-    // File was tests/foo.spec.ts, renamed to docs/foo.md → still flagged.
     expect(isProtected('docs/foo.md', patterns, 'tests/foo.spec.ts')).toBe('tests/**');
   });
 });
