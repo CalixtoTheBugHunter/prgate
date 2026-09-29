@@ -56,6 +56,9 @@ On each pull request, PR Gate:
 1. Reads and validates `guardrails.prgate.json` at your repo root. Missing → it passes
    silently (you haven't opted in).
 2. Compares the PR's changed file paths against your `protected` globs (minimatch syntax).
+   The config file itself (`guardrails.prgate.json`, or whatever `config-path` points at)
+   is **always guarded implicitly** — you never list it, and a PR can't quietly weaken,
+   rename, or delete the gate in the same change.
 3. **If ≥1 protected file changed:** posts (or updates) a **single sticky comment** with
    a warning banner and a table — one row per matched file with a status badge
    (🟢 `CREATED` / 🟡 `MODIFIED` / 🔴 `REMOVED`) and a **View diff ↗** link.
@@ -76,7 +79,7 @@ top-level `guardrails` key. Unknown keys are ignored with a warning. A
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `protected` | `string[]` | `[]` | Glob patterns ([minimatch](https://github.com/isaacs/minimatch) syntax) matched against changed file paths. Empty ⇒ nothing is guarded (passes silently). |
+| `protected` | `string[]` | `[]` | Glob patterns ([minimatch](https://github.com/isaacs/minimatch) syntax) matched against changed file paths. The config file itself is always guarded implicitly, so even an empty list still catches edits to `guardrails.prgate.json`. |
 | `source_of_truth` | `string[]` | `[]` | **POST-MVP.** Parsed and shape-validated, but **not enforced** in this version. |
 | `is_hard_blocker` | `boolean` | `false` | `false` = advisory comment only. `true` = the check fails until the approval label is applied by a write-access user. |
 

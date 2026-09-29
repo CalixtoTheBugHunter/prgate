@@ -4,7 +4,7 @@ import * as github from '@actions/github';
 import { evaluateBlocker } from './blocker';
 import { type CommentTarget, deleteStaleComment, renderComment, upsertComment } from './comment';
 import { ConfigError, type LoadResult, loadConfig } from './config';
-import { type ChangedFile, matchProtected, normalizeStatus } from './match';
+import { type ChangedFile, matchProtected, normalizeStatus, withImplicitProtection } from './match';
 import { checkForUpdate } from './version-check';
 
 async function run(): Promise<void> {
@@ -17,6 +17,7 @@ async function run(): Promise<void> {
   const absoluteConfigPath = path.isAbsolute(configPath)
     ? configPath
     : path.join(workspace, configPath);
+  const configRelPath = path.relative(workspace, absoluteConfigPath).split(path.sep).join('/');
 
   let loaded: LoadResult | null;
   try {
@@ -38,6 +39,7 @@ async function run(): Promise<void> {
     core.warning(warning);
   }
   const config = loaded.config;
+  const protectedGlobs = withImplicitProtection(config.protected, configRelPath);
 
   const pr = github.context.payload.pull_request;
   if (!pr) {
@@ -55,12 +57,6 @@ async function run(): Promise<void> {
     actionRef: process.env.GITHUB_ACTION_REF,
   });
 
-  if (config.protected.length === 0) {
-    core.notice('`protected` is empty — nothing is guarded. Passing.');
-    await safeDeleteStaleComment(octokit, target);
-    return;
-  }
-
   if (config.source_of_truth.length > 0) {
     core.info(
       `Note: \`source_of_truth\` has ${config.source_of_truth.length} entr${config.source_of_truth.length === 1 ? 'y' : 'ies'} but is not enforced in this version.`,
@@ -70,7 +66,7 @@ async function run(): Promise<void> {
   const changed = await listChangedFiles(octokit, target);
   core.info(`PR #${prNumber} changed ${changed.length} file(s).`);
 
-  const matched = matchProtected(changed, config.protected);
+  const matched = matchProtected(changed, protectedGlobs);
 
   if (matched.length === 0) {
     core.info('No protected files were changed. Passing.');

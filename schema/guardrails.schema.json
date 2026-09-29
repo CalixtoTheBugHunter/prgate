@@ -18,7 +18,7 @@
       "properties": {
         "protected": {
           "type": "array",
-          "description": "Glob patterns (minimatch syntax) matched against the PR's changed file paths. Empty or omitted => nothing is guarded (PR Gate passes silently).",
+          "description": "Glob patterns (minimatch syntax) matched against the PR's changed file paths. The config file itself is always guarded implicitly, so even an empty or omitted list still catches edits to guardrails.prgate.json.",
           "items": {
             "type": "string",
             "minLength": 1
