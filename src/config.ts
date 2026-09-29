@@ -18,7 +18,7 @@ export interface LoadResult {
   warnings: string[];
 }
 
-const KNOWN_ROOT_KEYS = ['guardrails'];
+const KNOWN_ROOT_KEYS = ['$schema', 'guardrails'];
 const KNOWN_GUARDRAIL_KEYS = ['protected', 'source_of_truth', 'is_hard_blocker'];
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
