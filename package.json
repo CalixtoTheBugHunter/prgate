@@ -14,12 +14,12 @@
   "author": "CalixtoTheBugHunter",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CalixtoTheBugHunter/prgate.git"
+    "url": "git+https://github.com/Fuzzy-Unlogic/prgate.git"
   },
   "bugs": {
-    "url": "https://github.com/CalixtoTheBugHunter/prgate/issues"
+    "url": "https://github.com/Fuzzy-Unlogic/prgate/issues"
   },
-  "homepage": "https://github.com/CalixtoTheBugHunter/prgate#readme",
+  "homepage": "https://github.com/Fuzzy-Unlogic/prgate#readme",
   "private": true,
   "type": "commonjs",
   "main": "dist/index.js",
