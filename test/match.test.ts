@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  isProtected,
-  matchProtected,
-  normalizeStatus,
-  type ChangedFile,
-} from '../src/match';
+import { type ChangedFile, isProtected, matchProtected, normalizeStatus } from '../src/match';
 
 describe('normalizeStatus', () => {
   it('maps added → CREATED', () => {

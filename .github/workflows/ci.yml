@@ -22,6 +22,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Lint + format check (Biome, read-only). Fails on any error-level finding.
+      - run: pnpm run lint:ci
+
       - run: pnpm run typecheck
 
       - run: pnpm run test

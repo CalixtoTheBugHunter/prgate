@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { COMMENT_MARKER, diffAnchor, renderComment } from '../src/comment';
 import type { MatchedFile } from '../src/match';
@@ -19,7 +19,7 @@ const files: MatchedFile[] = [
 
 describe('diffAnchor', () => {
   it('is the sha256 hex of the path, prefixed with diff-', () => {
-    const expected = 'diff-' + crypto.createHash('sha256').update('tests/x.ts', 'utf8').digest('hex');
+    const expected = `diff-${crypto.createHash('sha256').update('tests/x.ts', 'utf8').digest('hex')}`;
     expect(diffAnchor('tests/x.ts')).toBe(expected);
   });
 

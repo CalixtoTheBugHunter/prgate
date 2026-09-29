@@ -1,11 +1,10 @@
-import * as path from 'path';
+import * as path from 'node:path';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-
-import { ConfigError, loadConfig } from './config';
-import { matchProtected, normalizeStatus, type ChangedFile } from './match';
-import { deleteStaleComment, renderComment, upsertComment, type CommentTarget } from './comment';
 import { evaluateBlocker } from './blocker';
+import { type CommentTarget, deleteStaleComment, renderComment, upsertComment } from './comment';
+import { ConfigError, type LoadResult, loadConfig } from './config';
+import { type ChangedFile, matchProtected, normalizeStatus } from './match';
 
 /**
  * PR Gate entrypoint. Deterministic: same PR + same config ⇒ same result. The only
@@ -22,7 +21,7 @@ async function run(): Promise<void> {
     : path.join(workspace, configPath);
 
   // 1. Read & validate config. Missing → PASS and exit. Malformed → FAIL.
-  let loaded;
+  let loaded: LoadResult | null;
   try {
     loaded = loadConfig(absoluteConfigPath);
   } catch (err) {
@@ -34,9 +33,7 @@ async function run(): Promise<void> {
   }
 
   if (loaded === null) {
-    core.notice(
-      `No ${configPath} found — PR Gate is not configured for this repo. Passing.`,
-    );
+    core.notice(`No ${configPath} found — PR Gate is not configured for this repo. Passing.`);
     return;
   }
 

@@ -70,7 +70,11 @@ export async function evaluateBlocker(
     // listEvents returns a union of event shapes; `label` only exists on the
     // labeled/unlabeled variants, so read it through a structural narrowing.
     for (const raw of events) {
-      const event = raw as { event?: string; label?: { name?: string }; actor?: { login?: string } };
+      const event = raw as {
+        event?: string;
+        label?: { name?: string };
+        actor?: { login?: string };
+      };
       if (event.event === 'labeled' && event.label?.name === approvalLabel && event.actor?.login) {
         labeler = event.actor.login;
       }

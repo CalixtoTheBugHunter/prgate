@@ -30,9 +30,12 @@
     "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --sourcemap --outfile=dist/index.js",
     "package": "pnpm run build",
     "typecheck": "tsc --noEmit",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "lint:ci": "biome ci",
     "test": "vitest run",
     "test:watch": "vitest",
-    "all": "pnpm run typecheck && pnpm run test && pnpm run build"
+    "all": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build"
   },
   "dependencies": {
     "@actions/core": "^3.0.1",
@@ -40,6 +43,7 @@
     "minimatch": "^10.0.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.14",
     "@types/node": "^22.10.2",
     "esbuild": "^0.28.2",
     "typescript": "^5.7.2",
