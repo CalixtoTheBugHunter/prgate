@@ -46,35 +46,7 @@ function comparePrerelease(a: string, b: string): number {
   if (b === '') {
     return -1;
   }
-  const as = a.split('.');
-  const bs = b.split('.');
-  for (let i = 0; i < Math.max(as.length, bs.length); i++) {
-    const x = as[i];
-    const y = bs[i];
-    if (x === undefined) {
-      return -1;
-    }
-    if (y === undefined) {
-      return 1;
-    }
-    const xNum = /^\d+$/.test(x);
-    const yNum = /^\d+$/.test(y);
-    if (xNum && yNum) {
-      const diff = Number(x) - Number(y);
-      if (diff !== 0) {
-        return Math.sign(diff);
-      }
-    } else if (xNum) {
-      return -1;
-    } else if (yNum) {
-      return 1;
-    } else if (x < y) {
-      return -1;
-    } else if (x > y) {
-      return 1;
-    }
-  }
-  return 0;
+  return Math.sign(a.localeCompare(b, 'en', { numeric: true }));
 }
 
 /**
