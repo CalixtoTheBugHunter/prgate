@@ -2,13 +2,10 @@ import type { getOctokit } from '@actions/github';
 
 type Octokit = ReturnType<typeof getOctokit>;
 
-/** Permission levels (from the collaborator-permission API) that count as write-or-above. */
 const WRITE_OR_ABOVE = new Set(['admin', 'write', 'maintain']);
 
-/** Outcome of evaluating whether a hard-blocked PR may pass. */
 export interface BlockerResult {
   passed: boolean;
-  /** Human-readable explanation, surfaced in logs and the failing check message. */
   reason: string;
 }
 
@@ -19,11 +16,6 @@ export interface BlockerContext {
   approvalLabel: string;
 }
 
-/**
- * Structural shape of an issue timeline event. `listEvents` returns a union of event
- * shapes; `label`/`actor` only exist on the labeled/unlabeled variants, so we read them
- * through this narrowed view.
- */
 interface LabelEvent {
   event?: string;
   label?: { name?: string };
@@ -44,7 +36,6 @@ export async function evaluateBlocker(
 ): Promise<BlockerResult> {
   const { owner, repo, prNumber, approvalLabel } = ctx;
 
-  // 1. Is the approval label currently present on the PR?
   let labelPresent: boolean;
   try {
     const labels = await octokit.paginate(octokit.rest.issues.listLabelsOnIssue, {
@@ -68,7 +59,6 @@ export async function evaluateBlocker(
     };
   }
 
-  // 2. Who applied the label most recently? Verify their permission.
   let labeler: string | undefined;
   try {
     const events = await octokit.paginate(octokit.rest.issues.listEvents, {
@@ -77,7 +67,6 @@ export async function evaluateBlocker(
       issue_number: prNumber,
       per_page: 100,
     });
-    // Last "labeled" event for this label wins (most recent application).
     for (const raw of events) {
       const event = raw as LabelEvent;
       if (event.event === 'labeled' && event.label?.name === approvalLabel && event.actor?.login) {
@@ -98,7 +87,6 @@ export async function evaluateBlocker(
     };
   }
 
-  // 3. Does the labeler have write+ permission?
   let permission: string;
   try {
     const res = await octokit.rest.repos.getCollaboratorPermissionLevel({

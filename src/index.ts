@@ -6,10 +6,6 @@ import { type CommentTarget, deleteStaleComment, renderComment, upsertComment } 
 import { ConfigError, type LoadResult, loadConfig } from './config';
 import { type ChangedFile, matchProtected, normalizeStatus } from './match';
 
-/**
- * PR Gate entrypoint. Deterministic: same PR + same config ⇒ same result. The only
- * network access is the GitHub API. No LLM/agentic logic lives here.
- */
 async function run(): Promise<void> {
   const token = core.getInput('github-token', { required: true });
   const configPath = core.getInput('config-path') || 'guardrails.prgate.json';
@@ -20,7 +16,6 @@ async function run(): Promise<void> {
     ? configPath
     : path.join(workspace, configPath);
 
-  // 1. Read & validate config. Missing → PASS and exit. Malformed → FAIL.
   let loaded: LoadResult | null;
   try {
     loaded = loadConfig(absoluteConfigPath);
@@ -42,7 +37,6 @@ async function run(): Promise<void> {
   }
   const config = loaded.config;
 
-  // We must be running on a pull_request event to inspect files / comment.
   const pr = github.context.payload.pull_request;
   if (!pr) {
     core.notice('PR Gate only runs on pull_request events. Nothing to do. Passing.');
@@ -54,7 +48,6 @@ async function run(): Promise<void> {
   const prNumber = pr.number;
   const target: CommentTarget = { owner, repo, prNumber };
 
-  // Config present but no protected globs → pass silently (clean up any stale comment).
   if (config.protected.length === 0) {
     core.notice('`protected` is empty — nothing is guarded. Passing.');
     await safeDeleteStaleComment(octokit, target);
@@ -62,20 +55,16 @@ async function run(): Promise<void> {
   }
 
   if (config.source_of_truth.length > 0) {
-    // POST-MVP: source_of_truth is parsed and validated but not acted on yet.
     core.info(
       `Note: \`source_of_truth\` has ${config.source_of_truth.length} entr${config.source_of_truth.length === 1 ? 'y' : 'ies'} but is not enforced in this version.`,
     );
   }
 
-  // 2. Get changed files (paginated) and normalize their statuses.
   const changed = await listChangedFiles(octokit, target);
   core.info(`PR #${prNumber} changed ${changed.length} file(s).`);
 
-  // 3. Filter to protected matches.
   const matched = matchProtected(changed, config.protected);
 
-  // 4. No matches → delete any prior comment, PASS.
   if (matched.length === 0) {
     core.info('No protected files were changed. Passing.');
     await safeDeleteStaleComment(octokit, target);
@@ -87,7 +76,6 @@ async function run(): Promise<void> {
     core.info(`  ${file.status}  ${file.path}  (matched \`${file.matchedBy}\`)`);
   }
 
-  // 5. Upsert the sticky comment.
   const body = renderComment({
     matched,
     isHardBlocker: config.is_hard_blocker,
@@ -100,14 +88,12 @@ async function run(): Promise<void> {
   try {
     await upsertComment(octokit, target, body);
   } catch (err) {
-    // Fork PRs may lack pull-requests: write — degrade gracefully, don't crash.
     core.warning(
       `Could not post/update the PR Gate comment (${describe(err)}). ` +
         'This is expected for fork PRs without write permission.',
     );
   }
 
-  // 6. Determine pass/fail.
   if (!config.is_hard_blocker) {
     core.info('Advisory mode (is_hard_blocker=false). Passing.');
     core.setOutput('blocked', 'false');
@@ -123,7 +109,6 @@ async function run(): Promise<void> {
   core.setFailed(result.reason);
 }
 
-/** Fetch all changed files for a PR, following pagination, normalized to ChangedFile. */
 async function listChangedFiles(
   octokit: ReturnType<typeof github.getOctokit>,
   target: CommentTarget,
@@ -143,7 +128,6 @@ async function listChangedFiles(
   );
 }
 
-/** Delete a stale comment, tolerating permission errors (fork PRs). */
 async function safeDeleteStaleComment(
   octokit: ReturnType<typeof github.getOctokit>,
   target: CommentTarget,

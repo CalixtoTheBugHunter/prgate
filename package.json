@@ -30,9 +30,10 @@
     "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --sourcemap --outfile=dist/index.js",
     "package": "pnpm run build",
     "typecheck": "tsc --noEmit",
-    "lint": "biome check",
+    "lint": "biome check && pnpm run lint:comments",
     "lint:fix": "biome check --write",
-    "lint:ci": "biome ci",
+    "lint:ci": "biome ci && pnpm run lint:comments",
+    "lint:comments": "node scripts/check-comments.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "all": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build"

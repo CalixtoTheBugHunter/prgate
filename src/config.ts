@@ -1,19 +1,11 @@
 import * as fs from 'node:fs';
 
-/**
- * Parsed and validated guardrails configuration.
- * Mirrors the `guardrails` object inside `guardrails.prgate.json`.
- */
 export interface GuardrailsConfig {
-  /** MVP: glob patterns (minimatch syntax) of files that guard the project. */
   protected: string[];
-  /** POST-MVP: parsed and shape-validated, but NOT acted upon in the MVP. */
   source_of_truth: string[];
-  /** When true, the check blocks merge until the approval label is applied. */
   is_hard_blocker: boolean;
 }
 
-/** Thrown when the config file exists but is malformed. Callers should FAIL the check. */
 export class ConfigError extends Error {
   constructor(message: string) {
     super(message);
@@ -21,7 +13,6 @@ export class ConfigError extends Error {
   }
 }
 
-/** Non-fatal validation notes (e.g. unknown keys) surfaced to the caller as warnings. */
 export interface LoadResult {
   config: GuardrailsConfig;
   warnings: string[];
@@ -84,19 +75,16 @@ export function parseConfig(raw: string): LoadResult {
     }
   }
 
-  // `protected` — required in spirit; default to [] so an empty/omitted list passes silently.
   const protectedGlobs =
     guardrails.protected === undefined
       ? []
       : assertStringArray(guardrails.protected, 'guardrails.protected');
 
-  // `source_of_truth` — POST-MVP. Validate the shape only; do not act on it.
   const sourceOfTruth =
     guardrails.source_of_truth === undefined
       ? []
       : assertStringArray(guardrails.source_of_truth, 'guardrails.source_of_truth');
 
-  // `is_hard_blocker` — default false; must be boolean if present.
   let isHardBlocker = false;
   if (guardrails.is_hard_blocker !== undefined) {
     if (typeof guardrails.is_hard_blocker !== 'boolean') {

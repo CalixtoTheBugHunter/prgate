@@ -8,7 +8,8 @@
       ".github/workflows/**",
       "action.yml",
       "tsconfig.json",
-      "biome.json"
+      "biome.json",
+      "scripts/check-comments.mjs"
     ],
     "source_of_truth": [],
     "is_hard_blocker": false

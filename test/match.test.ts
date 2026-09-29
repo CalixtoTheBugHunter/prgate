@@ -51,7 +51,6 @@ describe('isProtected', () => {
   });
 
   it('also matches when a renamed file MOVED OUT of a protected path', () => {
-    // File was tests/foo.spec.ts, renamed to docs/foo.md → still flagged.
     expect(isProtected('docs/foo.md', patterns, 'tests/foo.spec.ts')).toBe('tests/**');
   });
 });
