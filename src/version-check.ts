@@ -55,16 +55,12 @@ function comparePrerelease(a: string, b: string): number {
  * without one (`1.1.0`).
  */
 export function compareSemver(a: Semver, b: Semver): number {
-  if (a.major !== b.major) {
-    return Math.sign(a.major - b.major);
-  }
-  if (a.minor !== b.minor) {
-    return Math.sign(a.minor - b.minor);
-  }
-  if (a.patch !== b.patch) {
-    return Math.sign(a.patch - b.patch);
-  }
-  return comparePrerelease(a.prerelease, b.prerelease);
+  return (
+    Math.sign(a.major - b.major) ||
+    Math.sign(a.minor - b.minor) ||
+    Math.sign(a.patch - b.patch) ||
+    comparePrerelease(a.prerelease, b.prerelease)
+  );
 }
 
 /**
@@ -79,24 +75,18 @@ export function selectSuggestedVersion(runningRaw: string, availableRaw: string[
   if (!running) {
     return null;
   }
-  const runningIsStable = running.prerelease === '';
+  const stableOnly = running.prerelease === '';
   let best: { raw: string; ver: Semver } | null = null;
   for (const raw of availableRaw) {
     const ver = parseSemver(raw);
-    if (!ver) {
+    if (!ver || (stableOnly && ver.prerelease !== '') || compareSemver(ver, running) <= 0) {
       continue;
     }
-    if (runningIsStable && ver.prerelease !== '') {
-      continue;
-    }
-    if (compareSemver(ver, running) <= 0) {
-      continue;
-    }
-    if (best === null || compareSemver(ver, best.ver) > 0) {
+    if (!best || compareSemver(ver, best.ver) > 0) {
       best = { raw, ver };
     }
   }
-  return best === null ? null : best.raw;
+  return best?.raw ?? null;
 }
 
 /**
