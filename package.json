@@ -1,6 +1,6 @@
 {
   "name": "pr-gate",
-  "version": "1.0.0-alpha",
+  "version": "1.1.0-alpha",
   "description": "A deterministic, language-agnostic GitHub Action that flags pull requests touching project-declared \"protected\" files (tests, lint config, CI) for mandatory human review.",
   "keywords": [
     "github-action",
