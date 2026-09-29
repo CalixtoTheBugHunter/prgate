@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { type ChangedFile, isProtected, matchProtected, normalizeStatus } from '../src/match';
+import {
+  type ChangedFile,
+  isProtected,
+  matchProtected,
+  normalizeStatus,
+  withImplicitProtection,
+} from '../src/match';
 
 describe('normalizeStatus', () => {
   it('maps added → CREATED', () => {
@@ -52,6 +58,44 @@ describe('isProtected', () => {
 
   it('also matches when a renamed file MOVED OUT of a protected path', () => {
     expect(isProtected('docs/foo.md', patterns, 'tests/foo.spec.ts')).toBe('tests/**');
+  });
+});
+
+describe('withImplicitProtection', () => {
+  it('appends the config path so it guards itself even when protected is empty', () => {
+    expect(withImplicitProtection([], 'guardrails.prgate.json')).toEqual([
+      'guardrails.prgate.json',
+    ]);
+  });
+
+  it('appends the config path alongside existing globs', () => {
+    expect(withImplicitProtection(['tests/**'], 'guardrails.prgate.json')).toEqual([
+      'tests/**',
+      'guardrails.prgate.json',
+    ]);
+  });
+
+  it('does not duplicate the config path when it is already listed', () => {
+    expect(
+      withImplicitProtection(['guardrails.prgate.json', 'tests/**'], 'guardrails.prgate.json'),
+    ).toEqual(['guardrails.prgate.json', 'tests/**']);
+  });
+
+  it('protects a config nested in a subdirectory at its own path', () => {
+    expect(withImplicitProtection([], 'config/guardrails.prgate.json')).toEqual([
+      'config/guardrails.prgate.json',
+    ]);
+  });
+
+  it('makes an otherwise-empty config still catch edits to itself', () => {
+    const globs = withImplicitProtection([], 'guardrails.prgate.json');
+    const files: ChangedFile[] = [
+      { path: 'src/index.ts', status: 'MODIFIED' },
+      { path: 'guardrails.prgate.json', status: 'MODIFIED' },
+    ];
+    expect(matchProtected(files, globs)).toEqual([
+      { path: 'guardrails.prgate.json', status: 'MODIFIED', matchedBy: 'guardrails.prgate.json' },
+    ]);
   });
 });
 

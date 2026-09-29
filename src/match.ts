@@ -58,6 +58,17 @@ export function isProtected(
 }
 
 /**
+ * Return the effective protected globs, always including the guardrails config file
+ * itself. The config that declares the guardrails is implicitly protected so a PR can't
+ * quietly weaken, rename, or delete it in the same change — maintainers never have to
+ * list it in `protected`. The path is appended only when not already present so the
+ * config author can still list it explicitly without producing a duplicate.
+ */
+export function withImplicitProtection(patterns: string[], configPath: string): string[] {
+  return patterns.includes(configPath) ? patterns : [...patterns, configPath];
+}
+
+/**
  * Filter changed files down to those matching any protected glob.
  * Deterministic: input order is preserved, no dedupe needed (GitHub lists each path once).
  */
