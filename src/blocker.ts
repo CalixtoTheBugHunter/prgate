@@ -20,6 +20,17 @@ export interface BlockerContext {
 }
 
 /**
+ * Structural shape of an issue timeline event. `listEvents` returns a union of event
+ * shapes; `label`/`actor` only exist on the labeled/unlabeled variants, so we read them
+ * through this narrowed view.
+ */
+interface LabelEvent {
+  event?: string;
+  label?: { name?: string };
+  actor?: { login?: string };
+}
+
+/**
  * Decide whether a hard-blocked PR is unblocked.
  *
  * Rule (from the spec): the approval label must be present AND have been applied by a
@@ -67,14 +78,8 @@ export async function evaluateBlocker(
       per_page: 100,
     });
     // Last "labeled" event for this label wins (most recent application).
-    // listEvents returns a union of event shapes; `label` only exists on the
-    // labeled/unlabeled variants, so read it through a structural narrowing.
     for (const raw of events) {
-      const event = raw as {
-        event?: string;
-        label?: { name?: string };
-        actor?: { login?: string };
-      };
+      const event = raw as LabelEvent;
       if (event.event === 'labeled' && event.label?.name === approvalLabel && event.actor?.login) {
         labeler = event.actor.login;
       }
