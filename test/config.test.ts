@@ -1,5 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { ConfigError, parseConfig } from '../src/config';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+import { afterEach, describe, expect, it } from 'vitest';
+import { ConfigError, isWorkspaceCheckedOut, parseConfig } from '../src/config';
 
 describe('parseConfig', () => {
   it('parses a full valid config', () => {
@@ -71,5 +74,35 @@ describe('parseConfig', () => {
       JSON.stringify({ guardrails: { protected: [], mystery: 1 } }),
     );
     expect(warnings.some((w) => w.includes('guardrails.mystery'))).toBe(true);
+  });
+});
+
+describe('isWorkspaceCheckedOut', () => {
+  const tmpDirs: string[] = [];
+
+  afterEach(() => {
+    while (tmpDirs.length) {
+      fs.rmSync(tmpDirs.pop()!, { recursive: true, force: true });
+    }
+  });
+
+  function mkTmp(): string {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'prgate-ws-'));
+    tmpDirs.push(dir);
+    return dir;
+  }
+
+  it('returns true when the workspace contains files (repo checked out)', () => {
+    const dir = mkTmp();
+    fs.writeFileSync(path.join(dir, 'README.md'), '# repo');
+    expect(isWorkspaceCheckedOut(dir)).toBe(true);
+  });
+
+  it('returns false for an empty workspace (checkout was omitted)', () => {
+    expect(isWorkspaceCheckedOut(mkTmp())).toBe(false);
+  });
+
+  it('returns false when the workspace directory does not exist', () => {
+    expect(isWorkspaceCheckedOut(path.join(os.tmpdir(), 'prgate-does-not-exist-xyz'))).toBe(false);
   });
 });

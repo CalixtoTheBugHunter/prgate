@@ -16,6 +16,10 @@ jobs:
   pr-gate:
     runs-on: ubuntu-latest
     steps:
+      # Required: PR Gate reads guardrails.prgate.json from the checked-out workspace.
+      # Without this step the workspace is empty and the gate fails with a setup error.
+      - uses: actions/checkout@v4
+
       - uses: Fuzzy-Unlogic/prgate@v1.0.0-alpha
         # Optional inputs (defaults shown):
         # with:

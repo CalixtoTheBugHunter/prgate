@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 
-import { ConfigError, loadConfig } from './config';
+import { ConfigError, isWorkspaceCheckedOut, loadConfig } from './config';
 import { matchProtected, normalizeStatus, type ChangedFile } from './match';
 import { deleteStaleComment, renderComment, upsertComment, type CommentTarget } from './comment';
 import { evaluateBlocker } from './blocker';
@@ -34,6 +34,18 @@ async function run(): Promise<void> {
   }
 
   if (loaded === null) {
+    // A missing config normally means "not opted in → pass silently". But if the workspace
+    // was never checked out, the file could not have been read regardless — a workflow
+    // setup error (missing `actions/checkout`), not an opt-out. Fail loudly so a
+    // non-functional gate never reports a false green.
+    if (!isWorkspaceCheckedOut(workspace)) {
+      core.setFailed(
+        `PR Gate could not read ${configPath}: the workspace at ${workspace} is empty, so ` +
+          `the repository was never checked out. Add \`- uses: actions/checkout@v4\` before ` +
+          `the PR Gate step in your workflow (see docs/templates/pr-gate.yml).`,
+      );
+      return;
+    }
     core.notice(
       `No ${configPath} found — PR Gate is not configured for this repo. Passing.`,
     );
