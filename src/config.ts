@@ -116,14 +116,12 @@ export function parseConfig(raw: string): LoadResult {
 }
 
 /**
- * Deterministic check that `dir` looks like a checked-out repository working tree.
+ * Check that `dir` looks like a checked-out repository working tree.
  *
  * The action reads the config from the runner workspace. If a consumer's workflow omits
  * `actions/checkout`, the workspace is empty, so the config file is missing on disk —
  * indistinguishable from "not opted in" unless we look. An empty (or absent) workspace
- * means the repo was never checked out: a workflow setup error, not an opt-out.
- *
- * Filesystem-only, no network — same directory ⇒ same answer.
+ * means the repo was never checked out.
  */
 export function isWorkspaceCheckedOut(dir: string): boolean {
   try {

@@ -1,135 +1,201 @@
 import * as path from 'path';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-
-import { ConfigError, isWorkspaceCheckedOut, loadConfig } from './config';
-import { matchProtected, normalizeStatus, type ChangedFile } from './match';
+import { ConfigError, isWorkspaceCheckedOut, loadConfig, type GuardrailsConfig } from './config';
+import { matchProtected, normalizeStatus, type ChangedFile, type MatchedFile } from './match';
 import { deleteStaleComment, renderComment, upsertComment, type CommentTarget } from './comment';
 import { evaluateBlocker } from './blocker';
 
-/**
- * PR Gate entrypoint. Deterministic: same PR + same config ⇒ same result. The only
- * network access is the GitHub API. No LLM/agentic logic lives here.
- */
+interface Inputs {
+  token: string;
+  configPath: string;
+  approvalLabel: string;
+  workspace: string;
+  absoluteConfigPath: string;
+}
+
+interface PullRequestContext {
+  octokit: ReturnType<typeof github.getOctokit>;
+  target: CommentTarget;
+  owner: string;
+  repo: string;
+  prNumber: number;
+  serverUrl: string;
+  approvalLabel: string;
+}
+
 async function run(): Promise<void> {
-  const token = core.getInput('github-token', { required: true });
+  const inputs = readInputs();
+
+  const config = loadGuardrailsConfig(inputs);
+  if (!config) return;
+
+  const ctx = resolvePullRequestContext(inputs);
+  if (!ctx) return;
+
+  if (await passWhenNothingIsGuarded(config, ctx)) return;
+
+  noteUnenforcedSourceOfTruth(config);
+
+  const matched = await findChangedProtectedFiles(config, ctx);
+  if (await passWhenNoProtectedFilesChanged(matched, ctx)) return;
+
+  logMatchedFiles(matched);
+  await postProtectedFilesComment(matched, config, ctx);
+  await applyGateVerdict(config, ctx);
+}
+
+function readInputs(): Inputs {
   const configPath = core.getInput('config-path') || 'guardrails.prgate.json';
-  const approvalLabel = core.getInput('approval-label') || 'prgate-approved';
-
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
-  const absoluteConfigPath = path.isAbsolute(configPath)
-    ? configPath
-    : path.join(workspace, configPath);
+  return {
+    token: core.getInput('github-token', { required: true }),
+    configPath,
+    approvalLabel: core.getInput('approval-label') || 'prgate-approved',
+    workspace,
+    absoluteConfigPath: path.isAbsolute(configPath)
+      ? configPath
+      : path.join(workspace, configPath),
+  };
+}
 
-  // 1. Read & validate config. Missing → PASS and exit. Malformed → FAIL.
+function loadGuardrailsConfig(inputs: Inputs): GuardrailsConfig | null {
   let loaded;
   try {
-    loaded = loadConfig(absoluteConfigPath);
+    loaded = loadConfig(inputs.absoluteConfigPath);
   } catch (err) {
     if (err instanceof ConfigError) {
       core.setFailed(`PR Gate config error: ${err.message}`);
-      return;
+      return null;
     }
     throw err;
   }
 
   if (loaded === null) {
-    // A missing config normally means "not opted in → pass silently". But if the workspace
-    // was never checked out, the file could not have been read regardless — a workflow
-    // setup error (missing `actions/checkout`), not an opt-out. Fail loudly so a
-    // non-functional gate never reports a false green.
-    if (!isWorkspaceCheckedOut(workspace)) {
-      core.setFailed(
-        `PR Gate could not read ${configPath}: the workspace at ${workspace} is empty, so ` +
-          `the repository was never checked out. Add \`- uses: actions/checkout@v4\` before ` +
-          `the PR Gate step in your workflow (see docs/templates/pr-gate.yml).`,
-      );
-      return;
-    }
-    core.notice(
-      `No ${configPath} found — PR Gate is not configured for this repo. Passing.`,
-    );
-    return;
+    reportMissingConfig(inputs);
+    return null;
   }
 
   for (const warning of loaded.warnings) {
     core.warning(warning);
   }
-  const config = loaded.config;
+  return loaded.config;
+}
 
-  // We must be running on a pull_request event to inspect files / comment.
+function reportMissingConfig(inputs: Inputs): void {
+  if (!isWorkspaceCheckedOut(inputs.workspace)) {
+    core.setFailed(
+      `PR Gate could not read ${inputs.configPath}: the workspace at ${inputs.workspace} is ` +
+        `empty, so the repository was never checked out. Add \`- uses: actions/checkout@v4\` ` +
+        `before the PR Gate step in your workflow (see docs/templates/pr-gate.yml).`,
+    );
+    return;
+  }
+  core.notice(`No ${inputs.configPath} found — PR Gate is not configured for this repo. Passing.`);
+}
+
+function resolvePullRequestContext(inputs: Inputs): PullRequestContext | null {
   const pr = github.context.payload.pull_request;
   if (!pr) {
     core.notice('PR Gate only runs on pull_request events. Nothing to do. Passing.');
-    return;
+    return null;
   }
-
-  const octokit = github.getOctokit(token);
   const { owner, repo } = github.context.repo;
-  const prNumber = pr.number;
-  const target: CommentTarget = { owner, repo, prNumber };
+  return {
+    octokit: github.getOctokit(inputs.token),
+    target: { owner, repo, prNumber: pr.number },
+    owner,
+    repo,
+    prNumber: pr.number,
+    serverUrl: github.context.serverUrl,
+    approvalLabel: inputs.approvalLabel,
+  };
+}
 
-  // Config present but no protected globs → pass silently (clean up any stale comment).
-  if (config.protected.length === 0) {
-    core.notice('`protected` is empty — nothing is guarded. Passing.');
-    await safeDeleteStaleComment(octokit, target);
-    return;
-  }
+async function passWhenNothingIsGuarded(
+  config: GuardrailsConfig,
+  ctx: PullRequestContext,
+): Promise<boolean> {
+  if (config.protected.length > 0) return false;
+  core.notice('`protected` is empty — nothing is guarded. Passing.');
+  await safeDeleteStaleComment(ctx.octokit, ctx.target);
+  return true;
+}
 
-  if (config.source_of_truth.length > 0) {
-    // POST-MVP: source_of_truth is parsed and validated but not acted on yet.
-    core.info(
-      `Note: \`source_of_truth\` has ${config.source_of_truth.length} entr${config.source_of_truth.length === 1 ? 'y' : 'ies'} but is not enforced in this version.`,
-    );
-  }
+function noteUnenforcedSourceOfTruth(config: GuardrailsConfig): void {
+  const count = config.source_of_truth.length;
+  if (count === 0) return;
+  core.info(
+    `Note: \`source_of_truth\` has ${count} entr${count === 1 ? 'y' : 'ies'} but is not enforced in this version.`,
+  );
+}
 
-  // 2. Get changed files (paginated) and normalize their statuses.
-  const changed = await listChangedFiles(octokit, target);
-  core.info(`PR #${prNumber} changed ${changed.length} file(s).`);
+async function findChangedProtectedFiles(
+  config: GuardrailsConfig,
+  ctx: PullRequestContext,
+): Promise<MatchedFile[]> {
+  const changed = await listChangedFiles(ctx.octokit, ctx.target);
+  core.info(`PR #${ctx.prNumber} changed ${changed.length} file(s).`);
+  return matchProtected(changed, config.protected);
+}
 
-  // 3. Filter to protected matches.
-  const matched = matchProtected(changed, config.protected);
+async function passWhenNoProtectedFilesChanged(
+  matched: MatchedFile[],
+  ctx: PullRequestContext,
+): Promise<boolean> {
+  if (matched.length > 0) return false;
+  core.info('No protected files were changed. Passing.');
+  await safeDeleteStaleComment(ctx.octokit, ctx.target);
+  return true;
+}
 
-  // 4. No matches → delete any prior comment, PASS.
-  if (matched.length === 0) {
-    core.info('No protected files were changed. Passing.');
-    await safeDeleteStaleComment(octokit, target);
-    return;
-  }
-
+function logMatchedFiles(matched: MatchedFile[]): void {
   core.info(`${matched.length} protected file(s) changed:`);
   for (const file of matched) {
     core.info(`  ${file.status}  ${file.path}  (matched \`${file.matchedBy}\`)`);
   }
+}
 
-  // 5. Upsert the sticky comment.
+async function postProtectedFilesComment(
+  matched: MatchedFile[],
+  config: GuardrailsConfig,
+  ctx: PullRequestContext,
+): Promise<void> {
   const body = renderComment({
     matched,
     isHardBlocker: config.is_hard_blocker,
-    approvalLabel,
-    owner,
-    repo,
-    prNumber,
-    serverUrl: github.context.serverUrl,
+    approvalLabel: ctx.approvalLabel,
+    owner: ctx.owner,
+    repo: ctx.repo,
+    prNumber: ctx.prNumber,
+    serverUrl: ctx.serverUrl,
   });
   try {
-    await upsertComment(octokit, target, body);
+    await upsertComment(ctx.octokit, ctx.target, body);
   } catch (err) {
-    // Fork PRs may lack pull-requests: write — degrade gracefully, don't crash.
     core.warning(
       `Could not post/update the PR Gate comment (${describe(err)}). ` +
         'This is expected for fork PRs without write permission.',
     );
   }
+}
 
-  // 6. Determine pass/fail.
+async function applyGateVerdict(
+  config: GuardrailsConfig,
+  ctx: PullRequestContext,
+): Promise<void> {
   if (!config.is_hard_blocker) {
     core.info('Advisory mode (is_hard_blocker=false). Passing.');
     core.setOutput('blocked', 'false');
     return;
   }
 
-  const result = await evaluateBlocker(octokit, { owner, repo, prNumber, approvalLabel });
+  const result = await evaluateBlocker(ctx.octokit, {
+    owner: ctx.owner,
+    repo: ctx.repo,
+    prNumber: ctx.prNumber,
+    approvalLabel: ctx.approvalLabel,
+  });
   core.setOutput('blocked', String(!result.passed));
   if (result.passed) {
     core.info(result.reason);
@@ -138,7 +204,6 @@ async function run(): Promise<void> {
   core.setFailed(result.reason);
 }
 
-/** Fetch all changed files for a PR, following pagination, normalized to ChangedFile. */
 async function listChangedFiles(
   octokit: ReturnType<typeof github.getOctokit>,
   target: CommentTarget,
@@ -158,7 +223,6 @@ async function listChangedFiles(
   );
 }
 
-/** Delete a stale comment, tolerating permission errors (fork PRs). */
 async function safeDeleteStaleComment(
   octokit: ReturnType<typeof github.getOctokit>,
   target: CommentTarget,
