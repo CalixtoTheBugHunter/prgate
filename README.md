@@ -43,6 +43,10 @@ On each pull request, PR Gate:
    - `is_hard_blocker: true` → **fails** (blocking merge via branch protection) until a
      user with **write access** applies the approval label; then it passes.
 
+The sticky comment looks like this:
+
+![PR Gate sticky comment listing protected files that changed, each with a status badge and a "View diff" link](docs/assets/pr-gate-comment.png)
+
 ---
 
 ## Quick start
