@@ -108,6 +108,7 @@ content-level. The engine makes no language assumptions.
 | `github-token` | `${{ github.token }}` | Token used to read the PR, post the comment, and verify labeler permissions. |
 | `config-path` | `guardrails.prgate.json` | Path to the config, relative to the repo root. |
 | `approval-label` | `prgate-approved` | Label a write-access user applies to unblock a hard-blocked PR. |
+| `version-check` | `true` | When `true`, warn (never fail) if a newer PR Gate release is available. See [Staying up to date](#staying-up-to-date). |
 
 ### Action outputs
 
@@ -144,6 +145,39 @@ permissions:
 > **Fork PRs:** GitHub restricts `pull-requests: write` for PRs from forks. PR Gate
 > degrades gracefully — it logs a warning and does not crash — but it cannot post the
 > comment on such PRs. Consider `pull_request_target` (with care) if you need this.
+
+---
+
+## Staying up to date
+
+A GitHub Action runs exactly the ref you pin — it never upgrades itself silently (that
+would be a supply-chain risk). PR Gate gives you three ways to stay current, from most to
+least automatic:
+
+**1. Pin the floating major tag.** Reference `uses: Fuzzy-Unlogic/prgate@v1` and you
+auto-follow every stable patch and minor release — no PRs to merge. (During the `-alpha`
+phase the `v1` tag does not exist yet; pin the exact pre-release tag until then.)
+
+**2. Let Dependabot open upgrade PRs.** If you pin an exact tag (or a SHA for stronger
+supply-chain safety), enable Dependabot's `github-actions` ecosystem and it opens a PR
+whenever a new PR Gate release is published. Copy
+[`docs/templates/dependabot.yml`](docs/templates/dependabot.yml) to `.github/dependabot.yml`:
+
+```yaml
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+```
+
+**3. Built-in nudge.** On every run, PR Gate checks its own version against the latest
+release and, if you're behind, emits a **non-blocking** warning annotation (and appends a
+line to the PR comment when one is posted). It never fails the run, degrades silently on
+any network error, and skips consumers pinned to a floating tag like `@v1` (they already
+auto-update). Disable it with `version-check: false`. You can also **Watch → Custom →
+Releases** on the repo for manual notifications.
 
 ---
 

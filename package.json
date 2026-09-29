@@ -27,7 +27,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --sourcemap --outfile=dist/index.js",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --sourcemap --outfile=dist/index.js --define:__PRGATE_VERSION__=\"\\\"$npm_package_version\\\"\"",
     "package": "pnpm run build",
     "typecheck": "tsc --noEmit",
     "lint": "biome check && pnpm run lint:comments",
