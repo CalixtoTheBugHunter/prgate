@@ -66,6 +66,13 @@ describe('parseConfig', () => {
     expect(warnings.some((w) => w.includes('extra'))).toBe(true);
   });
 
+  it('does not warn on a top-level $schema pointer', () => {
+    const { warnings } = parseConfig(
+      JSON.stringify({ $schema: './schema/guardrails.schema.json', guardrails: { protected: [] } }),
+    );
+    expect(warnings).toHaveLength(0);
+  });
+
   it('warns on unknown keys inside guardrails', () => {
     const { warnings } = parseConfig(JSON.stringify({ guardrails: { protected: [], mystery: 1 } }));
     expect(warnings.some((w) => w.includes('guardrails.mystery'))).toBe(true);
