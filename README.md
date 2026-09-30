@@ -1,9 +1,5 @@
 # PR Gate
 
-> **v1.0.0-alpha — pre-release MVP.** Minimal, deterministic scope, still stabilizing.
-> Pin the exact pre-release tag (`@v1.0.0-alpha`); the floating `v1` tag is reserved for
-> the first stable release. See [Roadmap](#roadmap).
-
 A **language-agnostic** GitHub Action that detects when a pull request touches files a
 project has declared **"protected"** (tests, lint config, CI workflows, project config,
 etc.) and surfaces them for **mandatory human review** — deterministically, with **zero
